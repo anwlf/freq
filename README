@@ -1,0 +1,14 @@
+===========================================
+Frequency meater through GPIO kernel driver
+===========================================
+
+To compile run:
+make
+
+To install module for testing run:
+sudo insmod freq.ko gpio=22,23
+
+To test run:
+sudo cat /dev/freq*
+
+Licensing GPL-2.0
