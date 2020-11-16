@@ -364,21 +364,12 @@ static int dev_ioctl(struct inode *i, struct file *f, unsigned int cmd, unsigned
 static long dev_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
 #endif
 {
+    int minor = MINOR(f->f_path.dentry->d_inode->i_rdev);
     freq_arg_t fr;
     switch (cmd) {
            case FREQ_GET_VARIABLES:
-/*
-	    resp.inputs=0;
-	    for (i=0; i<IN_GPIO_CNT; i++) {
-		val = gpio_get_value(in_gpio[i]);
-		resp.inputs|=(val&1);
-	    }
-	    resp.outputs=0;
-	    for (i=0; i<OUT_GPIO_CNT; i++) {
-		val = out_gpio_state[i];
-		resp.outputs|=(val&1);
-	    }
-*/
+            fr.nsec[0]=cnt_pin_ns_diff_avg[minor];
+            fr.nsec[1]=cnt_pin_ns_pulse_avg[minor];
             if (copy_to_user((freq_arg_t *)arg, &fr, sizeof(freq_arg_t)))
             {
                 return -EACCES;
@@ -387,12 +378,6 @@ static long dev_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
         case FREQ_CLR_VARIABLES:
             //resp.inputs=0;
             //resp.outputs=0;
-            break;
-        case FREQ_SET_VARIABLES:
-            if (copy_from_user(&fr, (freq_arg_t *)arg, sizeof(freq_arg_t)))
-            {
-                return -EACCES;
-            }
             break;
         default:
             return -EINVAL;
