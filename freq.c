@@ -376,8 +376,14 @@ static long dev_ioctl(struct file *f, unsigned int cmd, unsigned long arg)
             }
             break;
         case FREQ_CLR_VARIABLES:
-            //resp.inputs=0;
-            //resp.outputs=0;
+            fr.nsec[0]=0;
+            fr.nsec[1]=0;
+            cnt_pin_ns_diff[minor]=0;
+            cnt_pin_ns_pulse[minor]=0;
+            cnt_pin_ns_diff_sum[minor]=0;
+            cnt_pin_ns_pulse_sum[minor]=0;
+            cnt_pin_ns_diff_avg[minor]=0;
+            cnt_pin_ns_pulse_avg[minor]=0;
             break;
         default:
             return -EINVAL;
