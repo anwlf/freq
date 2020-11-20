@@ -12,7 +12,6 @@
 #include <linux/fs.h>                   ///< Header for the Linux file system support
 #include <linux/gpio.h>
 #include <linux/interrupt.h>
-//#include <asm/uaccess.h>
 #include <linux/uaccess.h>
 #include <linux/time.h>                 ///< timespec
 #include <asm/div64.h>                  ///< for fast div
@@ -70,26 +69,23 @@ static struct file_operations fops =
 
 };
 
-static unsigned int cnt_gpio[MAX_DEV_CNT]={69,73};
+static unsigned int cnt_gpio[MAX_DEV_CNT]={22,23};
 module_param_array(cnt_gpio,int,&count,0660);
 
 static const char* cnt_names[MAX_DEV_CNT] = {
-"GPIO Pin 1",				//0, 69
-"GPIO Pin 2",				//1, 73
-"GPIO Pin 3",				//2,
-"GPIO Pin 4",				//3,
-"GPIO Pin 5",				//4,
-"GPIO Pin 6",				//5,
-"GPIO Pin 7",				//6,
-"GPIO Pin 8",				//7,
-"GPIO Pin 9",				//8,
-"GPIO Pin 10",				//9,
+"GPIO Pin 1", ///< 0, 69
+"GPIO Pin 2", ///< 1, 73
+"GPIO Pin 3", ///< 2,
+"GPIO Pin 4", ///< 3,
+"GPIO Pin 5", ///< 4,
+"GPIO Pin 6", ///< 5,
+"GPIO Pin 7", ///< 6,
+"GPIO Pin 8", ///< 7,
+"GPIO Pin 9", ///< 8,
+"GPIO Pin 10",///< 9
 };
 static int cnt_irq_input_pin[MAX_DEV_CNT];
-//static struct timespec cnt_pin_time[2][MAX_DEV_CNT];
-//static struct timespec cnt_pin_time_diff[MAX_DEV_CNT];
 static unsigned short timespec_ind[MAX_DEV_CNT];
-//static unsigned short int p_counter[MAX_DEV_CNT];
 static unsigned int counter[MAX_DEV_CNT];
 static unsigned int frequency[MAX_DEV_CNT];
 static bool cnt_irq_off[MAX_DEV_CNT];
@@ -127,7 +123,7 @@ static irqreturn_t irq_handler( int irq, void *dev_id )
 }
 
 
-// Frequency meter timer 
+/* Frequency meter timer  */
 static struct hrtimer htimer;
 static ktime_t kt_periode;
 
@@ -196,7 +192,7 @@ static int __init my_init(void)
 
     printk(KERN_INFO "freq module: init\n");
 
-    // Counter GPIOs
+    /* Counter GPIOs */
     for (i=0; i<count; i++) {
         sprintf(str,"CNT_GPIO%u",i);
         rc=cnt_gpio_init(i,str);
@@ -205,7 +201,7 @@ static int __init my_init(void)
             return rc;
         }
     }
-    // timer
+    /* timer */
     kt_periode = ktime_set(0, 1000000000); //seconds,nanoseconds
 //    hrtimer_init (&htimer, CLOCK_REALTIME, HRTIMER_MODE_REL);
     hrtimer_init (&htimer, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
@@ -213,19 +209,19 @@ static int __init my_init(void)
 //    hrtimer_start(&htimer, kt_periode, HRTIMER_MODE_REL);
     hrtimer_start(&htimer, kt_periode, HRTIMER_MODE_ABS);
 
-    // Init freq char device
+    /* Init freq char device */
 #ifdef _DEBUG
     printk(KERN_INFO "freq: Initializing the freq LKM\n");
 #endif
-    // Register the device class
+    /* Register the device class */
     freqClass = class_create(THIS_MODULE, CLASS_NAME);
-    if (IS_ERR(freqClass)){                // Check for error and clean up if there is
+    if (IS_ERR(freqClass)){                /* Check for error and clean up if there is */
         printk(KERN_ALERT "Failed to register device class\n");
-        return PTR_ERR(freqClass);          // Correct way to return an error on a pointer
+        return PTR_ERR(freqClass);         /* Correct way to return an error on a pointer */
     }
     printk(KERN_INFO "freq: device class registered correctly\n");
 
-    // Try to dynamically allocate a major number for the device -- more difficult but worth it
+    /* Try to dynamically allocate a major number for the device -- more difficult but worth it */
     majorNumber = register_chrdev(0, DEVICE_NAME, &fops);
     if (majorNumber<0){
         printk(KERN_ALERT "freq failed to register a major number\n");
@@ -233,7 +229,7 @@ static int __init my_init(void)
     }
     printk(KERN_INFO "%s: registered correctly with major number %d\n", DEVICE_NAME, majorNumber);
 
-    // Register the device driver
+    /* Register the device driver */
     for (i=0; i<count; i++) {
         sprintf(dev_name,"%s%d",DEVICE_NAME,cnt_gpio[i]);
         freqDevice[i] = device_create(freqClass, NULL, MKDEV(majorNumber, i), NULL, dev_name);
@@ -322,13 +318,13 @@ static ssize_t dev_read(struct file *filep, char *buffer, size_t len, loff_t *of
 
     if (*offset>=size_of_message) return 0;
 
-   // copy_to_user has the format ( * to, *from, size) and returns 0 on success
+   /* copy_to_user has the format ( * to, *from, size) and returns 0 on success */
    error_count = copy_to_user(buffer, message, size_of_message);
 
    if (error_count==0){            // if true then have success
         printk(KERN_INFO "freq: Sent %d characters to the user\n", size_of_message);
         *offset+=size_of_message;
-        // clear the position to the start and return size_ofMessage
+        /* clear the position to the start and return size_of Message */
         error_count=size_of_message;
         size_of_message=0;
         return error_count;
@@ -403,7 +399,6 @@ static int dev_release(struct inode *inodep, struct file *filep){
 #endif
    return 0;
 }
-//
 
 module_init(my_init);
 module_exit(my_exit);
