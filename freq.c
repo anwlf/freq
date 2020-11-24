@@ -402,8 +402,3 @@ static int dev_release(struct inode *inodep, struct file *filep){
 
 module_init(my_init);
 module_exit(my_exit);
-
-
-MODULE_LICENSE("Dual BSD/GPL");
-MODULE_AUTHOR("A.V.");
-MODULE_DESCRIPTION("Freq GPIO IRQ Driver");
